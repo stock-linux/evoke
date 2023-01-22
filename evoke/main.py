@@ -54,11 +54,11 @@ if __name__ == '__main__':
             f.write('description = ' + arguments['<description>'] + '\n')
             f.write('source = ' + arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version") + '\n')
             # Add optional fields
-            if '<maintainer>' in arguments:
+            if arguments['<maintainer>'] != None:
                 f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
-            if '<license>' in arguments:
+            if arguments['<license>'] != None:
                 f.write('license = ' + arguments['<license>'] + '\n')
-            if '<url>' in arguments:
+            if arguments['<url>'] != None:
                 f.write('url = ' + arguments['<url>'] + '\n')
 
         # Log the creation of the package
