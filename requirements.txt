@@ -2,3 +2,4 @@ colorama
 docopt
 python-magic
 pyelftools
+requests
