@@ -192,6 +192,14 @@ if __name__ == '__main__':
                         if not pkg in run_deps:
                             run_deps.append(pkg)
 
+        # Write the run dependencies to the PKGDEPS file
+        with open('../metadata/PKGDEPS', 'w') as f:
+            for dep in run_deps:
+                f.write(dep + '\n')
+
+        # Log a successful detection of runtime dependencies
+        print(colorama.Fore.GREEN + 'Detected runtime dependencies' + colorama.Fore.RESET)
+
 
         # Check if the PKGTREE line count is greater than 1
         with open('../metadata/PKGTREE', 'r') as f:
