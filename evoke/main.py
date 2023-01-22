@@ -66,8 +66,10 @@ if __name__ == '__main__':
 
 
     if arguments['build']:
-        os.remove('build.stderr.log')
-        os.remove('build.stdout.log')
+        if os.path.exists('build.stderr.log'):
+            os.remove('build.stderr.log')
+        if os.path.exists('build.stdout.log'):
+            os.remove('build.stdout.log')
         # Build the package
         print(colorama.Fore.CYAN + 'Building package...' + colorama.Fore.RESET)
     
