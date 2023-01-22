@@ -210,8 +210,6 @@ if __name__ == '__main__':
             if len(f.readlines()) <= 1:
                 print(colorama.Fore.RED + 'Error: PKGTREE is empty' + colorama.Fore.RESET)
                 exit(1)
-            os.remove('../build.stdout.log')
-            os.remove('../build.stderr.log')
 
         # Generate the package
         print(colorama.Fore.CYAN + 'Generating package...' + colorama.Fore.RESET)
