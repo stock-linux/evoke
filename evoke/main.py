@@ -52,7 +52,7 @@ if __name__ == '__main__':
             f.write('version = ' + arguments['<version>'] + '\n')
             f.write('pkgrel = 1' + '\n')
             f.write('description = ' + arguments['<description>'] + '\n')
-            f.write('source = ' + arguments['<source>'] + '\n')
+            f.write('source = ' + arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version") + '\n')
             # Add optional fields
             if '<maintainer>' in arguments:
                 f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
