@@ -195,6 +195,8 @@ if __name__ == '__main__':
 
         for dep in global_elfdeps:
             for pkg in os.listdir("/var/evox/packages"):
+                if pkg == "DB":
+                    continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1] == dep:
                         if not pkg in run_deps:
