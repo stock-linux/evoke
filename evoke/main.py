@@ -1,7 +1,7 @@
 """Evoke.
 
 Usage:
-  evoke create <name> <version> <description> <source>
+  evoke create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]
   evoke increment
   evoke build
 
