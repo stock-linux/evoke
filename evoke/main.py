@@ -122,6 +122,10 @@ if __name__ == '__main__':
         # Set the environment variable version to the version of the package
         os.environ['version'] = version
 
+        # Set the variables MAKEFLAGS and NINJAJOBS to the JOBS environment variable
+        os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
+        os.environ['NINJAJOBS'] = os.environ['JOBS']
+
         # Change to the work directory
         os.chdir('work')
 
