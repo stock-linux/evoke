@@ -1,12 +1,12 @@
 """Evoke.
 
 Usage:
-  evoke create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]
+  evoke create <blfs_link> <description> [<maintainer>] [<license>] [<url>]
   evoke increment
   evoke build
 
 Options:
-    create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]  Create a new package
+    create <blfs_link> <description> [<maintainer>] [<license>] [<url>]  Create a new package
     -h --help                                      Show this screen.
 
 """
@@ -15,6 +15,7 @@ import shutil
 from docopt import docopt
 import os, colorama, requests, magic, re
 import subprocess as sp
+from bs4 import BeautifulSoup
 
 from elftools.elf.elffile import ELFFile, DynamicSection
 
@@ -35,12 +36,90 @@ def check_output(out: int):
         print(colorama.Fore.RED + 'Error: ' + str(out) + colorama.Fore.RESET)
         exit(1)
 
+
+def get_html(url):
+    """
+    Get the raw HTML file of the given URL
+    """
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(requests.get(url).text)
+        f.close()
+
+
+def get_dependencies():
+    """
+    Get packages name and version of the dependencies
+    """    
+    dependencies = []
+    packages = {}
+    
+    with open("index.html") as f:
+        soup = BeautifulSoup(f, 'html.parser')
+        tag = soup.find_all(class_="required")
+        tag += soup.find_all(class_="recommended")
+        tags = (tag[0].find_all("a", class_="xref") + tag[1].find_all("a", class_="xref")) 
+
+        for tag in tags:
+            dependencies += [tag.get("title")]
+
+        for dependency in dependencies:
+            separator = dependency.rindex('-')
+            package_name = dependency[:separator].replace(' ','-')
+            version = dependency[separator + 1:]
+            packages.update({package_name.lower() : version})
+
+        f.close()
+    return packages
+
+
+def get_build_info():
+    """
+    Get source link, MD5 sum, download size, disk space required and SBU of the package.
+    
+    TODO: test getting package name and version.
+    """
+    with open("index.html") as f:
+        soup = BeautifulSoup(f, 'html.parser')
+        itemlist = soup.find(class_="itemizedlist")
+        listitems = itemlist.find_all(class_="listitem")
+        
+        for i in range(6):
+            listitem = listitems[i]
+            match i:
+                case 0:
+                    package_source_link = listitem.find("p").find("a").get("href")
+                case 2:
+                    package_sum = listitem.find("p").get_text().strip()[18:]
+                case 3:
+                    package_download_size = listitem.find("p").get_text().strip()[15:]
+                case 4:
+                    package_disk_size = listitem.find("p").get_text().strip()[31:].split(" ", 2)
+                    if len(package_disk_size) == 2:
+                        package_disk_size = " ".join(package_disk_size)
+                    else:
+                        package_disk_size = " ".join(package_disk_size[:-1])
+                case 5:
+                    package_sbu = listitem.find("p").get_text().strip()[22:][:3]
+         
+        title = soup.find(title).get_text().strip()
+        separator = title.rindex('-')
+        package_name = title[:separator].replace(' ','-')
+        package_version = title[separator + 1:]
+
+        f.close()
+    return [package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum]
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     
     if arguments['create']:
-        os.makedirs(arguments['<name>'])
-        os.chdir(arguments['<name>'])
+        get_html(arguments['<blfs_link>']) # To test
+        dependencies = get_dependencies()
+        package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum = get_build_info()
+
+        os.makedirs(package_name)
+        os.chdir(package_name)
         os.makedirs('metadata')
         os.makedirs('data')
         os.makedirs('scripts')
@@ -48,11 +127,11 @@ if __name__ == '__main__':
         with open('metadata/PKGINFO', 'w') as f:
             # PKGINFO is formatted like this:
             # field (in lower case) = value
-            f.write('name = ' + arguments['<name>'] + '\n')
-            f.write('version = ' + arguments['<version>'] + '\n')
+            f.write('name = ' + package_name + '\n')
+            f.write('version = ' + package_version + '\n')
             f.write('pkgrel = 1' + '\n')
             f.write('description = ' + arguments['<description>'] + '\n')
-            f.write('source = ' + arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version") + '\n')
+            f.write('source = ' + package_source_link.replace(package_name, "$name").replace(package_version, "$version") + '\n')
             # Add optional fields
             if arguments['<maintainer>'] != None:
                 f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
@@ -62,7 +141,7 @@ if __name__ == '__main__':
                 f.write('url = ' + arguments['<url>'] + '\n')
 
         # Log the creation of the package
-        print(colorama.Fore.GREEN + 'Created package ' + arguments['<name>'] + ' version ' + arguments['<version>'] + colorama.Fore.RESET)
+        print(colorama.Fore.GREEN + 'Created package ' + package_name + ' version ' + package_version + colorama.Fore.RESET)
 
 
     if arguments['build']:
