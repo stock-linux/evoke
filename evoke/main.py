@@ -206,7 +206,7 @@ if __name__ == '__main__':
                     # If the package is not a 32-bit package, check if the dependency is a 32-bit package and skip it if there is a normal package equivalent
                     if pkg.startswith("lib32"):
                         # If there is a normal package equivalent, skip the 32-bit package
-                        if os.path.exists("/var/evox/packages/" + pkg[5:]):
+                        if os.path.exists("/var/evox/packages/" + pkg[6:]):
                             continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1].strip() == dep:
