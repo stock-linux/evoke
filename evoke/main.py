@@ -196,6 +196,7 @@ if __name__ == '__main__':
         name = ""
         version = ""
         source = ""
+        makedepends_str = ""
         with open('../metadata/PKGINFO', 'r') as f:
             for line in f:
                 if line.startswith('name'):
@@ -204,6 +205,8 @@ if __name__ == '__main__':
                     version = line.split(' = ')[1].strip()
                 elif line.startswith('source'):
                     source = line.split(' = ')[1].strip()
+                elif line.startswith('makedepends'):
+                    makedepends_str = line.split(' = ')[1].strip().split(' ')
 
         sources = []
         if source.startswith('(') and source.endswith(')'):
@@ -217,9 +220,24 @@ if __name__ == '__main__':
             r = requests.get(s)
             with open(s.split('/')[-1], 'wb') as f:
                 f.write(r.content)
+        
+        makedepends = []
+        for m in makedepends_str:
+            if m.startswith('(') and m.endswith(')'):
+                split = m.replace('(', '').replace(')', '').split(' ')
+                for s in split:
+                    makedepends.append(s)
+            else:
+                makedepends.append(m)
 
         # Log a successful download
         print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
+        
+        # Install makedepends
+        print(colorama.Fore.CYAN + 'Installing makedepends...' + colorama.Fore.RESET)
+        for m in makedepends:
+            print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
+            os.system('evox get ' + m)
 
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
@@ -235,8 +253,11 @@ if __name__ == '__main__':
         os.environ['version'] = version
 
         # Set the variables MAKEFLAGS and NINJAJOBS to the JOBS environment variable
-        os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
-        os.environ['NINJAJOBS'] = os.environ['JOBS']
+        # Note that this is only done if the JOBS environment variable is set
+        if 'JOBS' in os.environ:
+            os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
+            os.environ['NINJAJOBS'] = os.environ['JOBS']
+
 
         # Change to the work directory
         os.chdir('work')
@@ -305,8 +326,17 @@ if __name__ == '__main__':
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
+                if name.startswith("lib32"):
+                    if not pkg.startswith("lib32"):
+                        continue
+                else:
+                    # If the package is not a 32-bit package, check if the dependency is a 32-bit package and skip it if there is a normal package equivalent
+                    if pkg.startswith("lib32"):
+                        # If there is a normal package equivalent, skip the 32-bit package
+                        if os.path.exists("/var/evox/packages/" + pkg[6:]):
+                            continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
-                    if line.split("/")[-1] == dep:
+                    if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
                             run_deps.append(pkg)
 
