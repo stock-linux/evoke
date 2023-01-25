@@ -127,8 +127,10 @@ if __name__ == '__main__':
         os.environ['version'] = version
 
         # Set the variables MAKEFLAGS and NINJAJOBS to the JOBS environment variable
-        os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
-        os.environ['NINJAJOBS'] = os.environ['JOBS']
+        # Note that this is only done if the JOBS environment variable is set
+        if 'JOBS' in os.environ:
+            os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
+            os.environ['NINJAJOBS'] = os.environ['JOBS']
 
         # Change to the work directory
         os.chdir('work')
@@ -197,8 +199,11 @@ if __name__ == '__main__':
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
+                if name.startswith("lib32"):
+                    if not pkg.startswith("lib32"):
+                        continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
-                    if line.split("/")[-1] == dep:
+                    if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
                             run_deps.append(pkg)
 
