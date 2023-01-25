@@ -2,11 +2,13 @@
 
 Usage:
   evoke create <blfs_link> <description> [<maintainer>] [<license>] [<url>]
+  evoke create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>]
   evoke increment
   evoke build
 
 Options:
     create <blfs_link> <description> [<maintainer>] [<license>] [<url>]  Create a new package
+    create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>] Create a new package with autofil. Works only with BLFS website.
     -h --help                                      Show this screen.
 
 """
@@ -113,7 +115,7 @@ def get_build_info():
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     
-    if arguments['create']:
+    if arguments['create_blfs']:
         get_html(arguments['<blfs_link>']) # To test
         dependencies = get_dependencies()
         package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum = get_build_info()
@@ -142,6 +144,33 @@ if __name__ == '__main__':
 
         # Log the creation of the package
         print(colorama.Fore.GREEN + 'Created package ' + package_name + ' version ' + package_version + colorama.Fore.RESET)
+
+
+    if arguments['create']:
+        os.makedirs(arguments['<name>'])
+        os.chdir(arguments['<name>'])
+        os.makedirs('metadata')
+        os.makedirs('data')
+        os.makedirs('scripts')
+
+        with open('metadata/PKGINFO', 'w') as f:
+            # PKGINFO is formatted like this:
+            # field (in lower case) = value
+            f.write('name = ' + arguments['<name>'] + '\n')
+            f.write('version = ' + arguments['<version>'] + '\n')
+            f.write('pkgrel = 1' + '\n')
+            f.write('description = ' + arguments['<description>'] + '\n')
+            f.write('source = ' + arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version") + '\n')
+            # Add optional fields
+            if arguments['<maintainer>'] != None:
+                f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
+            if arguments['<license>'] != None:
+                f.write('license = ' + arguments['<license>'] + '\n')
+            if arguments['<url>'] != None:
+                f.write('url = ' + arguments['<url>'] + '\n')
+
+        # Log the creation of the package
+        print(colorama.Fore.GREEN + 'Created package ' + arguments['<name>'] + ' version ' + arguments['<version>'] + colorama.Fore.RESET)
 
 
     if arguments['build']:
@@ -304,6 +333,7 @@ if __name__ == '__main__':
         os.rename(name + '-' + version + '.tar.xz', name + '-' + version + '.evx')
         # Log a successful package generation
         print(colorama.Fore.GREEN + 'Generated package' + colorama.Fore.RESET)
+
 
     if arguments['increment']:
         # Increment the package release
