@@ -88,6 +88,7 @@ if __name__ == '__main__':
         name = ""
         version = ""
         source = ""
+        makedepends_str = ""
         with open('../metadata/PKGINFO', 'r') as f:
             for line in f:
                 if line.startswith('name'):
@@ -96,6 +97,8 @@ if __name__ == '__main__':
                     version = line.split(' = ')[1].strip()
                 elif line.startswith('source'):
                     source = line.split(' = ')[1].strip()
+                elif line.startswith('makedepends'):
+                    makedepends_str = line.split(' = ')[1].strip().split(' ')
 
         sources = []
         if source.startswith('(') and source.endswith(')'):
@@ -110,8 +113,23 @@ if __name__ == '__main__':
             with open(s.split('/')[-1], 'wb') as f:
                 f.write(r.content)
 
+        makedepends = []
+        for m in makedepends_str:
+            if m.startswith('(') and m.endswith(')'):
+                split = m.replace('(', '').replace(')', '').split(' ')
+                for s in split:
+                    makedepends.append(s)
+            else:
+                makedepends.append(m)
+
         # Log a successful download
         print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
+
+        # Install makedepends
+        print(colorama.Fore.CYAN + 'Installing makedepends...' + colorama.Fore.RESET)
+        for m in makedepends:
+            print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
+            os.system('evox get ' + m)
 
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
