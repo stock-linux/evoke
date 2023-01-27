@@ -134,7 +134,7 @@ if __name__ == '__main__':
             f.write('pkgrel = 1' + '\n')
             f.write('description = ' + arguments['<description>'] + '\n')
             f.write('source = ' + package_source_link.replace(package_name, "$name").replace(package_version, "$version") + '\n')
-            f.write(f"makedepends = ('{' '.join(dependencies.keys())}){\n}")
+            f.write(f"makedepends = ('{' '.join(dependencies.keys())})" + '\n')
 
             # Add optional fields
             if arguments['<maintainer>'] != None:
