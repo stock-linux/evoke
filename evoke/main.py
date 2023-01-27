@@ -206,7 +206,7 @@ if __name__ == '__main__':
                 elif line.startswith('source'):
                     source = line.split(' = ')[1].strip()
                 elif line.startswith('makedepends'):
-                    makedepends_str = line.split(' = ')[1].strip().split(' ')
+                    makedepends_str = line.split(' = ')[1].strip()
 
         sources = []
         if source.startswith('(') and source.endswith(')'):
@@ -222,13 +222,12 @@ if __name__ == '__main__':
                 f.write(r.content)
         
         makedepends = []
-        for m in makedepends_str:
-            if m.startswith('(') and m.endswith(')'):
-                split = m.replace('(', '').replace(')', '').split(' ')
-                for s in split:
-                    makedepends.append(s)
-            else:
-                makedepends.append(m)
+        if makedepends_str.startswith('(') and makedepends_str.endswith(')'):
+            split = makedepends_str.replace('(', '').replace(')', '').split(' ')
+            for s in split:
+                makedepends.append(s.strip())
+        else:
+            makedepends.append(makedepends_str.strip())
 
         # Log a successful download
         print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
@@ -343,7 +342,8 @@ if __name__ == '__main__':
         # Write the run dependencies to the PKGDEPS file
         with open('../metadata/PKGDEPS', 'w') as f:
             for dep in run_deps:
-                f.write(dep + '\n')
+                if dep != name:
+                    f.write(dep + '\n')
 
         # Log a successful detection of runtime dependencies
         print(colorama.Fore.GREEN + 'Detected runtime dependencies' + colorama.Fore.RESET)
