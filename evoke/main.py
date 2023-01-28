@@ -196,6 +196,7 @@ if __name__ == '__main__':
         # Note: source is read from the PKGINFO file
         # At the same time, we get the name and version of the package
         print(colorama.Fore.CYAN + 'Downloading source...' + colorama.Fore.RESET)
+
         name = ""
         version = ""
         source = ""
@@ -253,6 +254,12 @@ if __name__ == '__main__':
             print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
             os.system('evox get ' + m)
 
+        # Install makedepends
+        print(colorama.Fore.CYAN + 'Installing makedepends...' + colorama.Fore.RESET)
+        for m in makedepends:
+            print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
+            os.system('evox get ' + m)
+
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
         os.environ['SRC'] = os.getcwd()
@@ -271,7 +278,6 @@ if __name__ == '__main__':
         if 'JOBS' in os.environ:
             os.environ['MAKEFLAGS'] = '-j' + os.environ['JOBS']
             os.environ['NINJAJOBS'] = os.environ['JOBS']
-
 
         # Change to the work directory
         os.chdir('work')
