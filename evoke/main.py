@@ -85,10 +85,14 @@ if __name__ == '__main__':
         # Note: source is read from the PKGINFO file
         # At the same time, we get the name and version of the package
         print(colorama.Fore.CYAN + 'Downloading source...' + colorama.Fore.RESET)
+
         name = ""
         version = ""
         source = ""
         makedepends_str = ""
+        run_depends_str = ""
+        run_deps = []
+
         with open('../metadata/PKGINFO', 'r') as f:
             for line in f:
                 if line.startswith('name'):
@@ -99,6 +103,8 @@ if __name__ == '__main__':
                     source = line.split(' = ')[1].strip()
                 elif line.startswith('makedepends'):
                     makedepends_str = line.split(' = ')[1].strip()
+                elif line.startswith('run'):
+                    run_depends_str = line.split(' = ')[1].strip()
 
         sources = []
         if source.startswith('(') and source.endswith(')'):
@@ -120,6 +126,13 @@ if __name__ == '__main__':
                 makedepends.append(s.strip())
         else:
             makedepends.append(makedepends_str.strip())
+
+        if run_depends_str.startswith('(') and run_depends_str.endswith(')'):
+            split = run_depends_str.replace('(', '').replace(')', '').split(' ')
+            for s in split:
+                run_deps.append(s.strip())
+        else:
+            run_deps.append(run_depends_str.strip())
 
         # Log a successful download
         print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
@@ -209,8 +222,6 @@ if __name__ == '__main__':
                     continue
 
         global_elfdeps = list(dict.fromkeys(global_elfdeps))
-        
-        run_deps = []
 
         for dep in global_elfdeps:
             for pkg in os.listdir("/var/evox/packages"):
