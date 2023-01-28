@@ -108,8 +108,12 @@ def get_build_info():
         package_name = title[:separator].replace(' ','-')
         package_version = title[separator + 1:]
 
+        package_class = soup.find(class_="package")
+        description_raw = package_class.find("p")
+        package_description = ' '.join(description_raw.get_text().strip().split())
+
         f.close()
-    return [package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum]
+    return [package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum, package_description]
 
 
 if __name__ == '__main__':
@@ -118,7 +122,7 @@ if __name__ == '__main__':
     if arguments['create_blfs']:
         get_html(arguments['<blfs_link>']) # To test
         dependencies = get_dependencies()
-        package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum = get_build_info()
+        package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum, package_description = get_build_info()
 
         os.makedirs(package_name)
         os.chdir(package_name)
@@ -132,7 +136,7 @@ if __name__ == '__main__':
             f.write('name = ' + package_name + '\n')
             f.write('version = ' + package_version + '\n')
             f.write('pkgrel = 1' + '\n')
-            f.write('description = ' + arguments['<description>'] + '\n')
+            f.write(f"description = {package_description}" + '\n')
             f.write('source = ' + package_source_link.replace(package_name, "$name").replace(package_version, "$version") + '\n')
             f.write(f"makedepends = ({' '.join(dependencies.keys())})" + '\n')
 
