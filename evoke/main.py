@@ -132,7 +132,8 @@ if __name__ == '__main__':
             for s in split:
                 run_deps.append(s.strip())
         else:
-            run_deps.append(run_depends_str.strip())
+            if run_depends_str != '':
+                run_deps.append(run_depends_str.strip())
 
         # Log a successful download
         print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
