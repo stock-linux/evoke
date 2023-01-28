@@ -3,3 +3,4 @@ docopt
 python-magic
 pyelftools
 requests
+beautifulsoup4
