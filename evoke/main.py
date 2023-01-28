@@ -66,7 +66,7 @@ def get_dependencies():
 
         for dependency in dependencies:
             separator = dependency.rindex('-')
-            package_dependency[:separator].replace(' ','-')
+            package_name = dependency[:separator].replace(' ','-')
             version = dependency[separator + 1:]
             packages.update({package_name.lower() : version})
 
@@ -136,16 +136,16 @@ if __name__ == '__main__':
         with open('metadata/PKGINFO', 'w') as f:
             # PKGINFO is formatted like this:
             # field (in lower case) = value
-            f.write(f"name = {package_name}")
-            f.write(f"version = {package_version}")
-            f.write("pkgrel = 1")
-            f.write(f"description = {package_description}")
-            f.write(f"source = {package_source_link.replace(package_name, "$name").replace(package_version, "$version")}")
-            f.write(f"makedepends = ({' '.join(dependencies.keys())})")
+            f.write(f"name = {package_name}\n")
+            f.write(f"version = {package_version}\n")
+            f.write("pkgrel = 1\n")
+            f.write(f"description = {package_description}\n")
+            f.write(f"source = {package_source_link.replace(package_name, '$name').replace(package_version, '$version')}\n")
+            f.write(f"makedepends = ({' '.join(dependencies.keys())})\n")
 
             # Add optional fields
             if arguments['<maintainer>'] != None:
-                f.write(f"maintainer = arguments['<maintainer>']}")
+                f.write(f"maintainer = {arguments['<maintainer>']}")
             if arguments['<license>'] != None:
                 f.write(f"license = {arguments['<license>']}")
             if arguments['<url>'] != None:
@@ -165,15 +165,15 @@ if __name__ == '__main__':
         with open('metadata/PKGINFO', 'w') as f:
             # PKGINFO is formatted like this:
             # field (in lower case) = value
-            f.write(f"name = {arguments['<name>']}")
-            f.write(f"version = {arguments['<version>']}")
-            f.write("pkgrel = 1")
-            f.write(f"description = {arguments['<description>']}")
-            f.write(f"source = {arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version")}")
+            f.write(f"name = {arguments['<name>']}\n")
+            f.write(f"version = {arguments['<version>']}\n")
+            f.write("pkgrel = 1\n")
+            f.write(f"description = {arguments['<description>']}\n")
+            f.write(f"source = {arguments['<source>'].replace(arguments['<name>'], '$name').replace(arguments['<version>'], '$version')}\n")
             
             # Add optional fields
             if arguments['<maintainer>'] != None:
-                f.write(f"maintainer = arguments['<maintainer>']}")
+                f.write(f"maintainer = {arguments['<maintainer>']}")
             if arguments['<license>'] != None:
                 f.write(f"license = {arguments['<license>']}")
             if arguments['<url>'] != None:
