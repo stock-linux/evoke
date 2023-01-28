@@ -75,9 +75,7 @@ def get_dependencies():
 
 def get_build_info():
     """
-    Get source link, MD5 sum, download size, disk space required and SBU of the package.
-    
-    TODO: test getting package name and version.
+    Get package name and version, source link, MD5 sum, download size, disk space required and SBU of the package.
     """
     with open("index.html") as f:
         soup = BeautifulSoup(f, 'html.parser')
@@ -125,7 +123,7 @@ if __name__ == '__main__':
     arguments = docopt(__doc__)
     
     if arguments['create_blfs']:
-        get_html(arguments['<blfs_link>']) # To test
+        get_html(arguments['<blfs_link>'])
         dependencies = get_dependencies()
         package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum, package_description = get_build_info()
 
