@@ -8,7 +8,7 @@ Usage:
 
 Options:
     create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]  Create a new package
-    create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>] Create a new package with autofil. Works only with BLFS website.
+    create_blfs <blfs_link> [<description>] [<maintainer>] [<license>] [<url>] Create a new package with autofil. Works only with BLFS website.
     -h --help                                      Show this screen.
 
 """
@@ -68,19 +68,16 @@ def get_dependencies():
 
         for dependency in dependencies:
             separator = dependency.rindex('-')
-            dependency[:separator].replace(' ','-')
+            package_name = dependency[:separator].replace(' ','-')
             version = dependency[separator + 1:]
             packages.update({package_name.lower() : version})
 
-        f.close()
     return packages
 
 
 def get_build_info():
     """
-    Get source link, MD5 sum, download size, disk space required and SBU of the package.
-    
-    TODO: test getting package name and version.
+    Get package name and version, source link, MD5 sum, download size, disk space required and SBU of the package.
     """
     with open("index.html") as f:
         soup = BeautifulSoup(f, 'html.parser')
@@ -114,15 +111,21 @@ def get_build_info():
         description_raw = package_class.find("p")
         package_description = ' '.join(description_raw.get_text().strip().split())
 
-        f.close()
     return [package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum, package_description]
+
+
+# Define colors for output
+color_reset = colorama.Fore.RESET
+color_green = colorama.Fore.GREEN
+color_cyan = colorama.Fore.CYAN
+color_red = colorama.Fore.RED
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     
     if arguments['create_blfs']:
-        get_html(arguments['<blfs_link>']) # To test
+        get_html(arguments['<blfs_link>'])
         dependencies = get_dependencies()
         package_name, package_version, package_source_link, package_sum, package_download_size, package_disk_size, package_sum, package_description = get_build_info()
 
@@ -135,23 +138,23 @@ if __name__ == '__main__':
         with open('metadata/PKGINFO', 'w') as f:
             # PKGINFO is formatted like this:
             # field (in lower case) = value
-            f.write('name = ' + package_name + '\n')
-            f.write('version = ' + package_version + '\n')
-            f.write('pkgrel = 1' + '\n')
-            f.write(f"description = {package_description}" + '\n')
-            f.write('source = ' + package_source_link.replace(package_name, "$name").replace(package_version, "$version") + '\n')
-            f.write(f"makedepends = ({' '.join(dependencies.keys())})" + '\n')
+            f.write(f"name = {package_name}\n")
+            f.write(f"version = {package_version}\n")
+            f.write("pkgrel = 1\n")
+            f.write(f"description = {package_description}\n")
+            f.write(f"source = {package_source_link.replace(package_name, '$name').replace(package_version, '$version')}\n")
+            f.write(f"makedepends = ({' '.join(dependencies.keys())})\n")
 
             # Add optional fields
             if arguments['<maintainer>'] != None:
-                f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
+                f.write(f"maintainer = {arguments['<maintainer>']}")
             if arguments['<license>'] != None:
-                f.write('license = ' + arguments['<license>'] + '\n')
+                f.write(f"license = {arguments['<license>']}")
             if arguments['<url>'] != None:
-                f.write('url = ' + arguments['<url>'] + '\n')
+                f.write(f"url = {arguments['<url>']}")
 
         # Log the creation of the package
-        print(colorama.Fore.GREEN + 'Created package ' + package_name + ' version ' + package_version + colorama.Fore.RESET)
+        print(f"{color_green}Created package {package_name} version {package_version}{color_reset}")
 
 
     if arguments['create']:
@@ -164,23 +167,22 @@ if __name__ == '__main__':
         with open('metadata/PKGINFO', 'w') as f:
             # PKGINFO is formatted like this:
             # field (in lower case) = value
-            f.write('name = ' + arguments['<name>'] + '\n')
-            f.write('version = ' + arguments['<version>'] + '\n')
-            f.write('pkgrel = 1' + '\n')
-            f.write('description = ' + arguments['<description>'] + '\n')
-            f.write('source = ' + arguments['<source>'].replace(arguments['<name>'], "$name").replace(arguments['<version>'], "$version") + '\n')
+            f.write(f"name = {arguments['<name>']}\n")
+            f.write(f"version = {arguments['<version>']}\n")
+            f.write("pkgrel = 1\n")
+            f.write(f"description = {arguments['<description>']}\n")
+            f.write(f"source = {arguments['<source>'].replace(arguments['<name>'], '$name').replace(arguments['<version>'], '$version')}\n")
             
             # Add optional fields
             if arguments['<maintainer>'] != None:
-                f.write('maintainer = ' + arguments['<maintainer>'] + '\n')
+                f.write(f"maintainer = {arguments['<maintainer>']}")
             if arguments['<license>'] != None:
-                f.write('license = ' + arguments['<license>'] + '\n')
+                f.write(f"license = {arguments['<license>']}")
             if arguments['<url>'] != None:
-                f.write('url = ' + arguments['<url>'] + '\n')
+                f.write(f"url = {arguments['<url>']}")
 
         # Log the creation of the package
-        print(colorama.Fore.GREEN + 'Created package ' + arguments['<name>'] + ' version ' + arguments['<version>'] + colorama.Fore.RESET)
-
+        print(f"{color_green}Created package {package_name} version {package_version}{color_reset}")
 
     if arguments['build']:
         if os.path.exists('build.stderr.log'):
@@ -188,7 +190,7 @@ if __name__ == '__main__':
         if os.path.exists('build.stdout.log'):
             os.remove('build.stdout.log')
         # Build the package
-        print(colorama.Fore.CYAN + 'Building package...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Building package...{color_reset}")
     
         # Create temp build directory
         if os.path.exists('build'):
@@ -201,7 +203,7 @@ if __name__ == '__main__':
         # Download source
         # Note: source is read from the PKGINFO file
         # At the same time, we get the name and version of the package
-        print(colorama.Fore.CYAN + 'Downloading source...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Downloading source...{color_reset}")
 
         name = ""
         version = ""
@@ -253,13 +255,14 @@ if __name__ == '__main__':
                 run_deps.append(run_depends_str.strip())
 
         # Log a successful download
-        print(colorama.Fore.GREEN + 'Downloaded source' + colorama.Fore.RESET)
+        print(f"{color_green}Downloaded source{color_reset}")
         
         # Install makedepends
-        print(colorama.Fore.CYAN + 'Installing makedepends...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Installing makedepends...{color_reset}")
         for m in makedepends:
-            print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
+            print(f"{color_cyan}Installing {m}...{color_reset}")
             os.system('evox get ' + m)
+
 
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
@@ -284,7 +287,7 @@ if __name__ == '__main__':
         os.chdir('work')
 
         # Run the build script
-        print(colorama.Fore.CYAN + 'Running build script...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Running build script...{color_reset}")
         
         ret = sp.run("bash ../../scripts/PKGBUILD", capture_output=True, shell=True)
 
@@ -300,26 +303,26 @@ if __name__ == '__main__':
         try:
             ret.check_returncode()
             # Log a successful build
-            print(colorama.Fore.GREEN + 'Built package' + colorama.Fore.RESET)
+            print(f"{color_green}Built package{color_reset}")
         except sp.CalledProcessError:
-            print(colorama.Fore.RED + 'Error: Build failed' + colorama.Fore.RESET)
+            print(f"{color_red}Error: Build failed{color_reset}")
             exit(1)
 
         # Generate the package tree
-        print(colorama.Fore.CYAN + 'Generating package tree...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Generating package tree...{color_reset}")
         # Change to the data directory
         os.chdir('../../data')
         os.system('find > ../metadata/PKGTREE')
         shutil.rmtree('../build')
         # Log a successful package tree generation
-        print(colorama.Fore.GREEN + 'Generated package tree' + colorama.Fore.RESET)
+        print(f"{color_green}Generated package tree{color_reset}")
 
         # We must detect the runtime dependencies of the package
         # We do this by checking each ELF file in the package tree
         # If the file is an ELF file, we check if it has any dependencies
         # If it does, we add them to the PKGDEPS file
-        print(colorama.Fore.CYAN + 'Detecting runtime dependencies...' + colorama.Fore.RESET)
-                # Get the future run dependencies by checking ELF files of the package
+        print(f"{color_cyan}Detecting runtime dependencies...{color_reset}")
+        # Get the future run dependencies by checking ELF files of the package
         global_elfdeps = []
         for subdir, dirs, files in os.walk("."):
             for file in files:
@@ -360,28 +363,28 @@ if __name__ == '__main__':
                     f.write(dep + '\n')
 
         # Log a successful detection of runtime dependencies
-        print(colorama.Fore.GREEN + 'Detected runtime dependencies' + colorama.Fore.RESET)
+        print(f"{color_green}Detected runtime dependencies{color_reset}")
 
 
         # Check if the PKGTREE line count is greater than 1
         with open('../metadata/PKGTREE', 'r') as f:
             if len(f.readlines()) <= 1:
-                print(colorama.Fore.RED + 'Error: PKGTREE is empty' + colorama.Fore.RESET)
+                print(f"{color_red}Error: PKGTREE is empty{color_reset}")
                 exit(1)
 
         # Generate the package
-        print(colorama.Fore.CYAN + 'Generating package...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Generating package...{color_reset}")
         os.chdir('../..')
-        os.system('tar -cJpf ' + name + '-' + version + '.tar.xz ' + name)
+        os.system(f"tar -cJpf {name}-{version}.tar.xz {name}")
         # Change .tar.xz to .evx
-        os.rename(name + '-' + version + '.tar.xz', name + '-' + version + '.evx')
+        os.rename(f"{name}-{version}.tar.xz", f"{name}-{version}.evx")
         # Log a successful package generation
-        print(colorama.Fore.GREEN + 'Generated package' + colorama.Fore.RESET)
+        print(f"{color_green}Generated package{color_reset}")
 
 
     if arguments['increment']:
         # Increment the package release
-        print(colorama.Fore.CYAN + 'Incrementing package release...' + colorama.Fore.RESET)
+        print(f"{color_cyan}Incrementing package release...{color_reset}")
         with open('metadata/PKGINFO', 'r') as f:
             lines = f.readlines()
 
@@ -390,9 +393,9 @@ if __name__ == '__main__':
                 if line.startswith('pkgrel'):
                     pkgrel = int(line.split(' = ')[1].strip())
                     pkgrel += 1
-                    f.write('pkgrel = ' + str(pkgrel) + '\n')
+                    f.write(f"pkgrel = {str(pkgrel)}")
                 else:
                     f.write(line)
 
         # Log a successful increment
-        print(colorama.Fore.GREEN + 'Incremented package release' + colorama.Fore.RESET)
+        print(f"{color_green}Incremented package release{color_reset}")

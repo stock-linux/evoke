@@ -1,0 +1,6 @@
+name = gnome-settings-daemon
+version = 41.0
+pkgrel = 1
+description = The GNOME Settings Daemon is responsible for setting various parameters of a GNOME Session and the applications that run under it.
+source = https://download.gnome.org/sources/$name/41/$name-$version.tar.xz
+makedepends = (alsa-lib colord fontconfig gcr geoclue geocode-glib gnome-desktop little-cms libcanberra libgweather libnotify libwacom pulseaudio elogind upower alsa cups networkmanager nss wayland)
