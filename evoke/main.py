@@ -2,7 +2,7 @@
 
 Usage:
   evoke create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]
-  evoke create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>]
+  evoke create_blfs <blfs_link> [<description>] [<maintainer>] [<license>] [<url>]
   evoke increment
   evoke build
 
