@@ -2,13 +2,13 @@
 
 Usage:
   evoke create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]
-  evoke create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>]
+  evoke create_blfs <blfs_link> [<description>] [<maintainer>] [<license>] [<url>]
   evoke increment
   evoke build
 
 Options:
     create <name> <version> <description> <source> [<maintainer>] [<license>] [<url>]  Create a new package
-    create_blfs <blfs_link> <description> [<maintainer>] [<license>] [<url>] Create a new package with autofil. Works only with BLFS website.
+    create_blfs <blfs_link> [<description>] [<maintainer>] [<license>] [<url>] Create a new package with autofil. Works only with BLFS website.
     -h --help                                      Show this screen.
 
 """
@@ -59,6 +59,8 @@ def get_dependencies():
         soup = BeautifulSoup(f, 'html.parser')
         tag = soup.find_all(class_="required")
         tag += soup.find_all(class_="recommended")
+        if len (tag) == 0:
+            return {}
         tags = (tag[0].find_all("a", class_="xref") + tag[1].find_all("a", class_="xref")) 
 
         for tag in tags:
@@ -249,7 +251,8 @@ if __name__ == '__main__':
             for s in split:
                 run_deps.append(s.strip())
         else:
-            run_deps.append(run_depends_str.strip())
+            if run_depends_str != '':
+                run_deps.append(run_depends_str.strip())
 
         # Log a successful download
         print(f"{color_green}Downloaded source{color_reset}")
@@ -260,7 +263,7 @@ if __name__ == '__main__':
             print(f"{color_cyan}Installing {m}...{color_reset}")
             os.system('evox get ' + m)
 
-        
+
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
         os.environ['SRC'] = os.getcwd()
@@ -345,15 +348,9 @@ if __name__ == '__main__':
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
-                if name.startswith("lib32"):
-                    if not pkg.startswith("lib32"):
+                if not pkg.startswith("lib32"):
+                    if dep.replace("lib32-", "") in global_elfdeps:
                         continue
-                else:
-                    # If the package is not a 32-bit package, check if the dependency is a 32-bit package and skip it if there is a normal package equivalent
-                    if pkg.startswith("lib32"):
-                        # If there is a normal package equivalent, skip the 32-bit package
-                        if os.path.exists("/var/evox/packages/" + pkg[6:]):
-                            continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
