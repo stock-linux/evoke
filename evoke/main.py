@@ -66,7 +66,7 @@ def get_dependencies():
 
         for dependency in dependencies:
             separator = dependency.rindex('-')
-            package_dependency[:separator].replace(' ','-')
+            dependency[:separator].replace(' ','-')
             version = dependency[separator + 1:]
             packages.update({package_name.lower() : version})
 
