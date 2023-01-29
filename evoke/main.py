@@ -59,6 +59,8 @@ def get_dependencies():
         soup = BeautifulSoup(f, 'html.parser')
         tag = soup.find_all(class_="required")
         tag += soup.find_all(class_="recommended")
+        if len (tag) == 0:
+            return {}
         tags = (tag[0].find_all("a", class_="xref") + tag[1].find_all("a", class_="xref")) 
 
         for tag in tags:
@@ -259,12 +261,6 @@ if __name__ == '__main__':
             print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
             os.system('evox get ' + m)
 
-        # Install makedepends
-        print(colorama.Fore.CYAN + 'Installing makedepends...' + colorama.Fore.RESET)
-        for m in makedepends:
-            print(colorama.Fore.CYAN + 'Installing ' + m + '...' + colorama.Fore.RESET)
-            os.system('evox get ' + m)
-
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
         os.environ['EVOKE_BUILD_DIR'] = os.getcwd()
         os.environ['SRC'] = os.getcwd()
@@ -349,6 +345,9 @@ if __name__ == '__main__':
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
+                if not pkg.startswith("lib32"):
+                    if dep.replace("lib32-", "") in global_elfdeps:
+                        continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
