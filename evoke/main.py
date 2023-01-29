@@ -228,15 +228,6 @@ if __name__ == '__main__':
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
-                if name.startswith("lib32"):
-                    if not pkg.startswith("lib32"):
-                        continue
-                else:
-                    # If the package is not a 32-bit package, check if the dependency is a 32-bit package and skip it if there is a normal package equivalent
-                    if pkg.startswith("lib32"):
-                        # If there is a normal package equivalent, skip the 32-bit package
-                        if os.path.exists("/var/evox/packages/" + pkg[6:]):
-                            continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
