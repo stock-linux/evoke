@@ -282,11 +282,12 @@ if __name__ == '__main__':
         # Log a successful download
         print(f"{color_green}Downloaded source{color_reset}")
         
-        # Install makedepends
-        print(f"{color_cyan}Installing makedepends...{color_reset}")
-        for m in makedepends:
-            print(f"{color_cyan}Installing {m}...{color_reset}")
-            os.system('evox get ' + m)
+        if makedepends_str.strip() != '':
+            # Install makedepends
+            print(f"{color_cyan}Installing makedepends...{color_reset}")
+            for m in makedepends:
+                print(f"{color_cyan}Installing {m}...{color_reset}")
+                os.system('evox get ' + m)
 
 
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
