@@ -182,7 +182,7 @@ if __name__ == '__main__':
                 f.write(f"url = {arguments['<url>']}")
 
         # Log the creation of the package
-        print(f"{color_green}Created package {package_name} version {package_version}{color_reset}")
+        print(f"{color_green}Created package {arguments['<name>']} version {arguments['<version>']}{color_reset}")
 
     if arguments['build']:
         if os.path.exists('build.stderr.log'):
