@@ -61,7 +61,11 @@ def get_dependencies():
         tag += soup.find_all(class_="recommended")
         if len (tag) == 0:
             return {}
-        tags = (tag[0].find_all("a", class_="xref") + tag[1].find_all("a", class_="xref")) 
+
+        if len(tag) == 1:
+            tags = tag[0].find_all("a", class_="xref")
+        elif len(tag) == 2:
+            tags = (tag[0].find_all("a", class_="xref") + tag[1].find_all("a", class_="xref")) 
 
         for tag in tags:
             dependencies += [tag.get("title")]
@@ -70,6 +74,7 @@ def get_dependencies():
             separator = dependency.rindex('-')
             dependency[:separator].replace(' ','-')
             version = dependency[separator + 1:]
+            package_name = dependency[:separator].replace(' ','-')
             packages.update({package_name.lower() : version})
 
         f.close()
@@ -86,28 +91,46 @@ def get_build_info():
         soup = BeautifulSoup(f, 'html.parser')
         itemlist = soup.find(class_="itemizedlist")
         listitems = itemlist.find_all(class_="listitem")
-        
-        for i in range(6):
-            listitem = listitems[i]
-            match i:
-                case 0:
-                    package_source_link = listitem.find("p").find("a").get("href")
-                case 2:
-                    package_sum = listitem.find("p").get_text().strip()[18:]
-                case 3:
-                    package_download_size = listitem.find("p").get_text().strip()[15:]
-                case 4:
-                    package_disk_size = listitem.find("p").get_text().strip()[31:].split(" ", 2)
-                    if len(package_disk_size) == 2:
-                        package_disk_size = " ".join(package_disk_size)
-                    else:
-                        package_disk_size = " ".join(package_disk_size[:-1])
-                case 5:
-                    package_sbu = listitem.find("p").get_text().strip()[22:][:3]
+        if len(listitems) == 5:
+            for i in range(5):
+                listitem = listitems[i]
+                match i:
+                    case 0:
+                        package_source_link = listitem.find("p").find("a").get("href")
+                    case 1:
+                        package_sum = listitem.find("p").get_text().strip()[18:]
+                    case 2:
+                        package_download_size = listitem.find("p").get_text().strip()[15:]
+                    case 3:
+                        package_disk_size = listitem.find("p").get_text().strip()[31:].split(" ", 2)
+                        if len(package_disk_size) == 2:
+                            package_disk_size = " ".join(package_disk_size)
+                        else:
+                            package_disk_size = " ".join(package_disk_size[:-1])
+                    case 4:
+                        package_sbu = listitem.find("p").get_text().strip()[22:][:3]
+        elif len(listitems) == 6:
+            for i in range(6):
+                listitem = listitems[i]
+                match i:
+                    case 0:
+                        package_source_link = listitem.find("p").find("a").get("href")
+                    case 2:
+                        package_sum = listitem.find("p").get_text().strip()[18:]
+                    case 3:
+                        package_download_size = listitem.find("p").get_text().strip()[15:]
+                    case 4:
+                        package_disk_size = listitem.find("p").get_text().strip()[31:].split(" ", 2)
+                        if len(package_disk_size) == 2:
+                            package_disk_size = " ".join(package_disk_size)
+                        else:
+                            package_disk_size = " ".join(package_disk_size[:-1])
+                    case 5:
+                        package_sbu = listitem.find("p").get_text().strip()[22:][:3]
          
         title = soup.find("title").get_text().strip()
         separator = title.rindex('-')
-        package_name = title[:separator].replace(' ','-')
+        package_name = title[:separator].replace(' ','-').lower()
         package_version = title[separator + 1:]
 
         package_class = soup.find(class_="package")
@@ -232,6 +255,8 @@ if __name__ == '__main__':
             sources.append(source.replace("$name", name).replace("$version", version))
 
         for s in sources:
+            if s == '':
+                continue
             r = requests.get(s)
             with open(s.split('/')[-1], 'wb') as f:
                 f.write(r.content)
@@ -340,14 +365,10 @@ if __name__ == '__main__':
                     continue
 
         global_elfdeps = list(dict.fromkeys(global_elfdeps))
-
         for dep in global_elfdeps:
             for pkg in os.listdir("/var/evox/packages"):
                 if pkg == "DB":
                     continue
-                if not pkg.startswith("lib32"):
-                    if dep.replace("lib32-", "") in global_elfdeps:
-                        continue
                 for line in open("/var/evox/packages/" + pkg + "/PKGTREE", "r").readlines():
                     if line.split("/")[-1].strip() == dep:
                         if not pkg in run_deps:
@@ -356,6 +377,9 @@ if __name__ == '__main__':
         # Write the run dependencies to the PKGDEPS file
         with open('../metadata/PKGDEPS', 'w') as f:
             for dep in run_deps:
+                if not pkg.startswith("lib32") and dep.startswith("lib32"):
+                    if dep.replace("lib32-", "") in run_deps:
+                        continue
                 if dep != name:
                     f.write(dep + '\n')
 
