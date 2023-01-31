@@ -287,7 +287,7 @@ if __name__ == '__main__':
             print(f"{color_cyan}Installing makedepends...{color_reset}")
             for m in makedepends:
                 print(f"{color_cyan}Installing {m}...{color_reset}")
-                os.system('evox get ' + m)
+                os.system('evox get ' + m + ' -y')
 
 
         # Set the environment variable EVOKE_BUILD_DIR to the build directory
