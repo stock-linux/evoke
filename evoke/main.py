@@ -400,9 +400,8 @@ if __name__ == '__main__':
         # Generate the package
         print(f"{color_cyan}Generating package...{color_reset}")
         os.chdir('../..')
-        os.system(f"tar -cJpf {name}-{version}.tar.xz {name}")
-        # Change .tar.xz to .evx
-        os.rename(f"{name}-{version}.tar.xz", f"{name}-{version}.evx")
+        # We compress the package with zstd
+        os.system(f"zstd -T0 -19 -o {name}-{version}.evx {name}")
         # Log a successful package generation
         print(f"{color_green}Generated package{color_reset}")
 
