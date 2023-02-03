@@ -234,6 +234,7 @@ if __name__ == '__main__':
         makedepends_str = ""
         run_depends_str = ""
         run_deps = []
+        metapkg = False 
 
         with open('../metadata/PKGINFO', 'r') as f:
             for line in f:
@@ -247,6 +248,9 @@ if __name__ == '__main__':
                     makedepends_str = line.split(' = ')[1].strip()
                 elif line.startswith('run'):
                     run_depends_str = line.split(' = ')[1].strip()
+                elif line.startswith('metapackage'):
+                    if int(line.split(' = ')[1].strip()) == 1:
+                        metapkg = True 
 
         sources = []
         if source.startswith('(') and source.endswith(')'):
@@ -311,28 +315,29 @@ if __name__ == '__main__':
 
         # Change to the work directory
         os.chdir('work')
-
-        # Run the build script
-        print(f"{color_cyan}Running build script...{color_reset}")
+        os.makedirs(os.environ['PKG'])
+        if not metapkg:
+            # Run the build script
+            print(f"{color_cyan}Running build script...{color_reset}")
         
-        ret = sp.run("bash ../../scripts/PKGBUILD", capture_output=True, shell=True)
+            ret = sp.run("bash ../../scripts/PKGBUILD", capture_output=True, shell=True)
 
-        # Log build results
-        build_log_file = open("../../build.stdout.log", "w")
-        build_log_file.write(ret.stdout.decode())
-        build_log_file.close()
+            # Log build results
+            build_log_file = open("../../build.stdout.log", "w")
+            build_log_file.write(ret.stdout.decode())
+            build_log_file.close()
 
-        err_log_file = open("../../build.stderr.log", "w")
-        err_log_file.write(ret.stderr.decode())
-        err_log_file.close()
+            err_log_file = open("../../build.stderr.log", "w")
+            err_log_file.write(ret.stderr.decode())
+            err_log_file.close()
 
-        try:
-            ret.check_returncode()
-            # Log a successful build
-            print(f"{color_green}Built package{color_reset}")
-        except sp.CalledProcessError:
-            print(f"{color_red}Error: Build failed{color_reset}")
-            exit(1)
+            try:
+                ret.check_returncode()
+                # Log a successful build
+                print(f"{color_green}Built package{color_reset}")
+            except sp.CalledProcessError:
+                print(f"{color_red}Error: Build failed{color_reset}")
+                exit(1)
 
         # Generate the package tree
         print(f"{color_cyan}Generating package tree...{color_reset}")
@@ -393,7 +398,7 @@ if __name__ == '__main__':
 
         # Check if the PKGTREE line count is greater than 1
         with open('../metadata/PKGTREE', 'r') as f:
-            if len(f.readlines()) <= 1:
+            if len(f.readlines()) <= 1 and not metapkg:
                 print(f"{color_red}Error: PKGTREE is empty{color_reset}")
                 exit(1)
 
