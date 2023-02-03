@@ -386,7 +386,7 @@ if __name__ == '__main__':
         # Write the run dependencies to the PKGDEPS file
         with open('../metadata/PKGDEPS', 'w') as f:
             for dep in run_deps:
-                if not pkg.startswith("lib32") and dep.startswith("lib32"):
+                if not name.startswith("lib32") and dep.startswith("lib32"):
                     if dep.replace("lib32-", "") in run_deps:
                         continue
                 if dep != name:
