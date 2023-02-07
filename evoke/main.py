@@ -315,7 +315,11 @@ if __name__ == '__main__':
 
         # Change to the work directory
         os.chdir('work')
-        os.makedirs(os.environ['PKG'])
+        if os.path.exists(os.environ['PKG']):
+            log.log_warning("data directory already exists !")
+        else:
+            os.makedirs(os.environ['PKG'])
+
         if not metapkg:
             # Run the build script
             print(f"{color_cyan}Running build script...{color_reset}")
@@ -422,7 +426,7 @@ if __name__ == '__main__':
                 if line.startswith('pkgrel'):
                     pkgrel = int(line.split(' = ')[1].strip())
                     pkgrel += 1
-                    f.write(f"pkgrel = {str(pkgrel)}")
+                    f.write(f"pkgrel = {str(pkgrel)}\n")
                 else:
                     f.write(line)
 
