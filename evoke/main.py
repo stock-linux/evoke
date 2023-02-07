@@ -142,6 +142,7 @@ color_reset = colorama.Fore.RESET
 color_green = colorama.Fore.GREEN
 color_cyan = colorama.Fore.CYAN
 color_red = colorama.Fore.RED
+color_yellow = colorama.Fore.YELLOW
 
 
 if __name__ == '__main__':
@@ -316,7 +317,7 @@ if __name__ == '__main__':
         # Change to the work directory
         os.chdir('work')
         if os.path.exists(os.environ['PKG']):
-            log.log_warning("data directory already exists !")
+            print(f"{color_yellow}Warning: data directory already exists !")
         else:
             os.makedirs(os.environ['PKG'])
 
