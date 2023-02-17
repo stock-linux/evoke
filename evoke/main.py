@@ -276,10 +276,14 @@ if __name__ == '__main__':
         else:
             makedepends.append(makedepends_str.strip())
         
+        to_avoid = []
         if run_depends_str.startswith('(') and run_depends_str.endswith(')'):
             split = run_depends_str.replace('(', '').replace(')', '').split(' ')
             for s in split:
-                run_deps.append(s.strip())
+                if s.strip().startswith('-'):
+                    to_avoid.append(s.strip().replace('-', ''))
+                else:
+                    run_deps.append(s.strip())
         else:
             if run_depends_str != '':
                 run_deps.append(run_depends_str.strip())
@@ -394,7 +398,7 @@ if __name__ == '__main__':
                 if not name.startswith("lib32") and dep.startswith("lib32"):
                     if dep.replace("lib32-", "") in run_deps:
                         continue
-                if dep != name:
+                if dep != name and dep not in to_avoid:
                     f.write(dep + '\n')
 
         # Log a successful detection of runtime dependencies
