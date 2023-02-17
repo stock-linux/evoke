@@ -281,7 +281,8 @@ if __name__ == '__main__':
             split = run_depends_str.replace('(', '').replace(')', '').split(' ')
             for s in split:
                 if s.strip().startswith('-'):
-                    to_avoid.append(s.strip().replace('-', ''))
+                    # Replace the first character with nothing
+                    to_avoid.append(s.strip()[1:])
                 else:
                     run_deps.append(s.strip())
         else:
